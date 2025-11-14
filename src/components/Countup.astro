@@ -1,0 +1,16 @@
+---
+import fs from "node:fs";
+
+try {
+	fs.accessSync("/tmp/count.txt");
+} catch {
+	fs.writeFileSync("/tmp/count.txt", "0");
+}
+
+const count = fs.readFileSync("/tmp/count.txt", "utf-8");
+---
+
+<p>Count: <span id="count">{count}</span></p>
+
+<button hx-post="/api/increment" hx-target="#count"> Increment </button>
+<button hx-post="/api/decrement" hx-target="#count"> Decrement </button>
