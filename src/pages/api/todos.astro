@@ -1,0 +1,153 @@
+---
+import { getTodos, writeTodos, type Todo } from "../../todoFileOperations";
+export const partial = true;
+
+let todos: Todo[] = [];
+try {
+	todos = getTodos();
+
+	const requestMethod = Astro.request.method;
+	switch (requestMethod) {
+		case "GET":
+			Astro.response.status = 200;
+			break;
+		case "POST":
+			try {
+				const formData = await Astro.request.formData();
+				const todo = formData.get("todo");
+				if (typeof todo !== "string") throw new Error("todo is not string");
+				todos.push({
+					id: new Date().getTime(),
+					title: todo,
+					complete: false,
+				});
+				writeTodos(todos);
+				Astro.response.status = 201;
+			} catch (formError) {
+				// フォームデータが無効な場合、JSONとして処理を試行
+				try {
+					const body = await Astro.request.text();
+					if (!body || body.trim() === '') {
+						throw new Error("Request body is empty");
+					}
+					const jsonData = JSON.parse(body);
+					const todo = jsonData.todo;
+					if (typeof todo !== "string") throw new Error("todo is not string");
+					todos.push({
+						id: new Date().getTime(),
+						title: todo,
+						complete: false,
+					});
+					writeTodos(todos);
+					Astro.response.status = 201;
+				} catch (jsonError) {
+					console.error("JSON parse error:", jsonError);
+					Astro.response.status = 400;
+				}
+			}
+			break;
+		default:
+			Astro.response.status = 405;
+			throw new Error("Method not allowed");
+	}
+} catch (error) {
+	console.error(error);
+}
+---
+
+{
+  todos.length ? (
+    <ul>
+      {todos.map((todo: Todo) => (
+        <li
+          x-data=`{editing: false, title: "${todo.title}", id: "${todo.id}"}`
+        >
+        <div
+            hx-target="submit"
+            x-show="!editing"
+          >
+              <input type="hidden" name="id" value={todo.id} />
+              <input
+                type="checkbox"
+                class="flex-grow-0 flex-shrink-0"
+                name="complete"
+                id=`todo_${todo.id}`
+                checked={todo.complete}
+                hx-put=`/api/todos/${todo.id}`
+                hx-trigger="change"
+                hx-target="this"
+              />
+              <label
+                for=`todo_${todo.id}`
+                class="flex-grow mx-1 peer-checked:line-through"
+                x-text="title">
+              </label>
+              <button
+                class="flex-grow-0 flex-shrink-0 rounded bg-green-500 px-4 py-0.5 font-bold text-white flex items-center justify-center"
+                x-on:click="editing = true"
+              >
+                <i data-feather="edit-3"></i>
+              </button>
+              <button
+                class="flex-grow-0 flex-shrink-0 rounded bg-red-500 px-4 py-0.5 font-bold text-white flex items-center justify-center"
+                hx-delete=`/api/todos/${todo.id}`
+                hx-target="closest li"
+                hx-swap="outerHTML swap:1s"
+              >
+                <i data-feather="trash"></i>
+              </button>
+          </div>
+          <div
+            hx-target="submit"
+            x-show="editing"
+            id=`${todo.id}`
+            x-data="{updateTitle(){patchTodo(id, title)}}"
+          >
+              <input
+                type="checkbox"
+                checked={todo.complete}
+                disabled
+              />
+              <input
+                type="text"
+                x-model="title"
+              />
+              <button
+                x-on:click="updateTitle();editing = false"
+              >
+                <i data-feather="check"></i>
+              </button>
+              <button
+                x-on:click="editing = false"
+              >
+                <i data-feather="x"></i>
+              </button>
+          </div>
+        </li>
+      ))}
+    </ul>
+    <script>
+      // @ts-ignore
+      feather.replace();
+
+      function patchTodo(id: string, title: string) {
+        const url = `/api/todos/${id}`;
+        const data = { title: title };
+        fetch(url, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+      }
+    </script>
+  ) : (
+    <p>TODOがありません。</p>
+  )
+}
+<p>{todos.length}件のTODO</p>
