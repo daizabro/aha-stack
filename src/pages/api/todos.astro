@@ -3,36 +3,50 @@ import { getTodos, writeTodos, type Todo } from "../../todoFileOperations";
 export const partial = true;
 
 let todos: Todo[] = [];
+
 try {
+	// 現在のTODOリストを取得
 	todos = getTodos();
 
 	const requestMethod = Astro.request.method;
 	switch (requestMethod) {
 		case "GET":
+
+		// GETの場合は正常処理
 			Astro.response.status = 200;
 			break;
-		case "POST":
+
+			case "POST":
 			try {
 				const formData = await Astro.request.formData();
 				const todo = formData.get("todo");
-				if (typeof todo !== "string") throw new Error("todo is not string");
+
+				// todoがstringでない場合はエラー
+				if (typeof todo !== "string") throw new Error("todoが文字列ではありません");
+
+				// TODOを追加
 				todos.push({
 					id: new Date().getTime(),
 					title: todo,
 					complete: false,
 				});
 				writeTodos(todos);
+
+				// 正常なレスポンスを返す
 				Astro.response.status = 201;
 			} catch (formError) {
-				// フォームデータが無効な場合、JSONとして処理を試行
+
+				// フォームデータの取得に失敗した場合、JSON形式での追加を試みる
 				try {
 					const body = await Astro.request.text();
 					if (!body || body.trim() === '') {
 						throw new Error("Request body is empty");
 					}
+
 					const jsonData = JSON.parse(body);
 					const todo = jsonData.todo;
 					if (typeof todo !== "string") throw new Error("todo is not string");
+
 					todos.push({
 						id: new Date().getTime(),
 						title: todo,
@@ -69,7 +83,6 @@ try {
               <input type="hidden" name="id" value={todo.id} />
               <input
                 type="checkbox"
-                class="flex-grow-0 flex-shrink-0"
                 name="complete"
                 id=`todo_${todo.id}`
                 checked={todo.complete}
@@ -79,29 +92,26 @@ try {
               />
               <label
                 for=`todo_${todo.id}`
-                class="flex-grow mx-1 peer-checked:line-through"
                 x-text="title">
               </label>
               <button
-                class="flex-grow-0 flex-shrink-0 rounded bg-green-500 px-4 py-0.5 font-bold text-white flex items-center justify-center"
                 x-on:click="editing = true"
               >
-                <i data-feather="edit-3"></i>
+                編集
               </button>
               <button
-                class="flex-grow-0 flex-shrink-0 rounded bg-red-500 px-4 py-0.5 font-bold text-white flex items-center justify-center"
                 hx-delete=`/api/todos/${todo.id}`
                 hx-target="closest li"
                 hx-swap="outerHTML swap:1s"
               >
-                <i data-feather="trash"></i>
+                削除
               </button>
           </div>
           <div
             hx-target="submit"
             x-show="editing"
             id=`${todo.id}`
-            x-data="{updateTitle(){patchTodo(id, title)}}"
+            // x-data="{updateTitle(){patchTodo(id, title)}}"
           >
               <input
                 type="checkbox"
@@ -115,37 +125,45 @@ try {
               <button
                 x-on:click="updateTitle();editing = false"
               >
-                <i data-feather="check"></i>
+                更新
               </button>
               <button
                 x-on:click="editing = false"
               >
-                <i data-feather="x"></i>
+                閉じる
               </button>
           </div>
         </li>
       ))}
     </ul>
-    <script>
-      // @ts-ignore
-      feather.replace();
+//     <script>
+//       // @ts-ignore
+//       feather.replace();
 
-      function patchTodo(id: string, title: string) {
-        const url = `/api/todos/${id}`;
-        const data = { title: title };
-        fetch(url, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        })
-        .then(response => response.json())
-        .catch((error) => {
-          console.error('Error:', error);
-        });
-      }
-    </script>
+//       function patchTodo(id: string, title: string) {
+// 				console.log(`Updating todo ${id} with title: ${title}`);
+//   const url = `/api/todos/${id}`;
+//   const data = { title: title };
+//   fetch(url, {
+//     method: 'PATCH',
+//     headers: {
+//       'Content-Type': 'application/json',
+//     },
+//     body: JSON.stringify(data),
+//   })
+//   .then(response => {
+//     if (response.ok) {
+//       // 成功時の処理（必要に応じてUIを更新）
+//       location.reload(); // またはHTMXでリストを再読み込み
+//     } else {
+//       throw new Error('Update failed');
+//     }
+//   })
+//   .catch((error) => {
+//     console.error('Error:', error);
+//   });
+// }
+//     </script>
   ) : (
     <p>TODOがありません。</p>
   )
