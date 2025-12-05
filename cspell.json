@@ -1,12 +1,9 @@
 {
-    "version": "0.2",
-    "ignorePaths": [],
-    "dictionaryDefinitions": [],
-    "dictionaries": [],
-    "words": [
-        "alpinejs",
-        "kiso"
-    ],
-    "ignoreWords": [],
-    "import": []
+	"version": "0.2",
+	"ignorePaths": [],
+	"dictionaryDefinitions": [],
+	"dictionaries": [],
+	"words": ["alpinejs", "daisyui", "HTMX", "kiso"],
+	"ignoreWords": [],
+	"import": []
 }

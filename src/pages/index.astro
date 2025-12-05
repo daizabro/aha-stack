@@ -1,7 +1,7 @@
 ---
-import Layout from "../layouts/Layout.astro";
 import { glob } from "glob";
 import path from "path";
+import Layout from "../layouts/Layout.astro";
 
 // ページファイルを動的に取得
 const pageFiles = await glob("src/pages/**/*.astro", {
@@ -64,7 +64,7 @@ const apisByCategory = apis.reduce(
 		acc[api.category].push(api);
 		return acc;
 	},
-	{} as Record<string, typeof apis>,
+	{} as Record<string, typeof apis>
 );
 ---
 
@@ -105,29 +105,41 @@ const apisByCategory = apis.reduce(
 	}
 
 	<h2>ファイル構造</h2>
-	<details>
-		<summary>ページファイル一覧</summary>
-		<ul>
-			{
-				pageFiles.map((file) => (
-					<li>
-						<code>{file}</code>
-					</li>
-				))
-			}
-		</ul>
+	<details
+		class="collapse bg-base-100 border border-base-300"
+		name="my-accordion-det-1"
+		open
+	>
+		<summary class="collapse-title font-semibold">ページファイル一覧</summary>
+		<div class="collapse-content text-sm">
+			<ul>
+				{
+					pageFiles.map((file) => (
+						<li>
+							<code>{file}</code>
+						</li>
+					))
+				}
+			</ul>
+		</div>
 	</details>
 
-	<details>
-		<summary>APIファイル一覧</summary>
-		<ul>
-			{
-				apiFiles.map((file) => (
-					<li>
-						<code>{file}</code>
-					</li>
-				))
-			}
-		</ul>
+	<details
+		class="collapse bg-base-100 border border-base-300"
+		name="my-accordion-det-1"
+		open
+	>
+		<summary class="collapse-title font-semibold">APIファイル一覧</summary>
+		<div class="collapse-content text-sm">
+			<ul>
+				{
+					apiFiles.map((file) => (
+						<li>
+							<code>{file}</code>
+						</li>
+					))
+				}
+			</ul>
+		</div>
 	</details>
 </Layout>

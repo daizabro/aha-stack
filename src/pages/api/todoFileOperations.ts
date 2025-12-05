@@ -1,4 +1,4 @@
-import * as fs from "fs";
+import * as fs from "node:fs";
 import { z } from "zod";
 
 const todoJson = "/tmp/todo.json";
@@ -18,7 +18,7 @@ function init(): void {
 			fs.writeFileSync(todoJson, "[]");
 		}
 	} catch (e) {
-		throw new Error("Could not init todo file");
+		throw new Error(String(e));
 	}
 }
 export type Todo = z.infer<typeof todoScheme>;
@@ -29,7 +29,7 @@ export function getTodos(): Todo[] {
 
 		const data = JSON.parse(fs.readFileSync(todoJson, "utf-8"));
 		if (!data) return [];
-		const todos = data.map((item: any) => {
+		const todos = data.map((item: unknown) => {
 			const todo = todoScheme.parse(item);
 			return todo;
 		});
@@ -45,6 +45,6 @@ export function writeTodos(todos: Todo[]): void {
 	try {
 		fs.writeFileSync(todoJson, JSON.stringify(todos));
 	} catch (e) {
-		throw new Error("Could not write todo file");
+		throw new Error(String(e));
 	}
 }
