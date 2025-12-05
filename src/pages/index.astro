@@ -69,27 +69,25 @@ const apisByCategory = apis.reduce(
 ---
 
 <Layout>
-	<h1>aha-stack</h1>
-	<p>利用可能なページ:</p>
-	<ul>
+	<h1 class="!text-5xl">AHA Stack テスト</h1>
+	<ul class="list bg-base-100 rounded-box shadow-md">
 		{
-			pages.map((page) => (
-				<li>
-					<a href={page.path}>
-						{page.name === "index" ? "ホーム" : page.name}
-						{page.path === "/" ? " (このページ)" : ""}
-					</a>
-					<small style="margin-left: 10px; color: #666;">({page.file})</small>
-				</li>
-			))
+			pages.map((page) => {
+				if (page.name === "index") return null;
+				return (
+					<li class="p-4 pb-2 text-xs opacity-60 tracking-wide">
+						<a href={page.path}>{page.name}</a>
+					</li>
+				);
+			})
 		}
 	</ul>
 
-	<h2>APIエンドポイント</h2>
+	<h2 class="text-4xl !my-10">APIエンドポイント</h2>
 	{
 		Object.entries(apisByCategory).map(([category, categoryApis]) => (
 			<div>
-				<h3>{category} API:</h3>
+				<h3 class="text-3xl !my-5">{category} API</h3>
 				<ul>
 					{categoryApis.map((api) => (
 						<li>
@@ -104,11 +102,10 @@ const apisByCategory = apis.reduce(
 		))
 	}
 
-	<h2>ファイル構造</h2>
+	<h2 class="text-4xl !my-10">ファイル構造</h2>
 	<details
 		class="collapse bg-base-100 border border-base-300"
 		name="my-accordion-det-1"
-		open
 	>
 		<summary class="collapse-title font-semibold">ページファイル一覧</summary>
 		<div class="collapse-content text-sm">
@@ -127,7 +124,6 @@ const apisByCategory = apis.reduce(
 	<details
 		class="collapse bg-base-100 border border-base-300"
 		name="my-accordion-det-1"
-		open
 	>
 		<summary class="collapse-title font-semibold">APIファイル一覧</summary>
 		<div class="collapse-content text-sm">

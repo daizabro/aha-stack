@@ -1,9 +1,24 @@
 ---
 import fs from "node:fs";
+import path from "node:path";
+import { dataDir } from "../_constants/data";
+
 export const partial = true;
 
-const count = +fs.readFileSync("/tmp/count.txt", "utf-8").trim() + 1;
-fs.writeFileSync("/tmp/count.txt", count.toString());
+const countFile = path.join(dataDir, "count.txt");
+
+// dataディレクトリが存在しない場合は作成
+if (!fs.existsSync(dataDir)) {
+	fs.mkdirSync(dataDir, { recursive: true });
+}
+
+// count.txtファイルが存在しない場合は初期化
+if (!fs.existsSync(countFile)) {
+	fs.writeFileSync(countFile, "0");
+}
+
+const count = +fs.readFileSync(countFile, "utf-8").trim() + 1;
+fs.writeFileSync(countFile, count.toString());
 ---
 
 <span id="count" hx-swap-oob="true">

@@ -1,9 +1,8 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { z } from "zod";
+import { dataDir } from "../../_constants/data";
 
-const projectRoot = process.cwd();
-const dataDir = path.join(projectRoot, "data");
 const todoJson = path.join(dataDir, "todo.json");
 const todoScheme = z.object({
 	id: z.number(),
