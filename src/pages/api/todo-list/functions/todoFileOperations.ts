@@ -1,7 +1,10 @@
 import * as fs from "node:fs";
+import * as path from "node:path";
 import { z } from "zod";
 
-const todoJson = "/tmp/todo.json";
+const projectRoot = process.cwd();
+const dataDir = path.join(projectRoot, "data");
+const todoJson = path.join(dataDir, "todo.json");
 const todoScheme = z.object({
 	id: z.number(),
 	title: z.string(),
@@ -10,10 +13,12 @@ const todoScheme = z.object({
 
 function init(): void {
 	try {
-		if (!fs.existsSync("/tmp")) {
-			fs.mkdirSync("/tmp");
+		// dataディレクトリが存在しない場合は作成
+		if (!fs.existsSync(dataDir)) {
+			fs.mkdirSync(dataDir, { recursive: true });
 		}
-		fs.accessSync("/tmp");
+
+		// todo.jsonファイルが存在しない場合は初期化
 		if (!fs.existsSync(todoJson)) {
 			fs.writeFileSync(todoJson, "[]");
 		}

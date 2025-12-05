@@ -1,5 +1,5 @@
 <form
-	hx-post="/api/todos"
+	hx-post="/api/todo-list/todos"
 	hx-trigger="submit"
 	hx-target="#todo-list"
 	hx-swap="innerHTML"
@@ -13,7 +13,7 @@
 <section>
 	<div
 		id="todo-list"
-		hx-get="/api/todos"
+		hx-get="/api/todo-list/todos"
 		hx-trigger="load once"
 		hx-swap="innerHTML"
 	>

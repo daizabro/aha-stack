@@ -3,7 +3,7 @@ import {
 	getTodos,
 	writeTodos,
 	type Todo,
-} from "./todo-list/functions/todoFileOperations";
+} from "./functions/todoFileOperations";
 
 export const partial = true;
 
@@ -70,7 +70,6 @@ const handlePatchRequest = async (todos: Todo[], id: string) => {
 };
 
 try {
-	console.log("あああ");
 	const todos = getTodos();
 
 	const requestMethod = Astro.request.method;
