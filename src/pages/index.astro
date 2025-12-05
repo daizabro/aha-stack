@@ -1,11 +1,133 @@
 ---
-import Countup from "../components/Countup.astro";
-import TodoList from "../components/TodoList.astro";
 import Layout from "../layouts/Layout.astro";
+import { glob } from "glob";
+import path from "path";
+
+// ページファイルを動的に取得
+const pageFiles = await glob("src/pages/**/*.astro", {
+	ignore: ["**/api/**", "**/components/**", "**/layouts/**"],
+	cwd: process.cwd(),
+});
+
+// APIファイルを動的に取得
+const apiFiles = await glob("src/pages/**/api/**/*.astro", {
+	cwd: process.cwd(),
+});
+
+// ページパスを生成する関数
+function generatePagePath(filePath: string): string {
+	const relativePath = filePath.replace("src/pages/", "").replace(".astro", "");
+	if (relativePath === "index") return "/";
+	if (relativePath.endsWith("/index")) {
+		return "/" + relativePath.replace("/index", "");
+	}
+	return "/" + relativePath;
+}
+
+// ページ情報を整理
+const pages = pageFiles.map((file) => {
+	const pagePath = generatePagePath(file);
+	const fileName = path.basename(file, ".astro");
+	const dirName = path.dirname(file).split("/").pop();
+
+	let displayName = fileName;
+	if (fileName === "index" && dirName !== "pages") {
+		displayName = dirName || fileName;
+	}
+
+	return {
+		path: pagePath,
+		name: displayName,
+		file: file,
+	};
+});
+
+// API情報を整理
+const apis = apiFiles.map((file) => {
+	const apiPath = generatePagePath(file);
+	const fileName = path.basename(file, ".astro");
+	const dirParts = path.dirname(file).split("/");
+	const category = dirParts[dirParts.length - 2] || "api";
+
+	return {
+		path: apiPath,
+		name: fileName === "[id]" ? `${category} [id]` : fileName,
+		category: category,
+		file: file,
+	};
+});
+
+// APIをカテゴリ別にグループ化
+const apisByCategory = apis.reduce(
+	(acc, api) => {
+		if (!acc[api.category]) acc[api.category] = [];
+		acc[api.category].push(api);
+		return acc;
+	},
+	{} as Record<string, typeof apis>,
+);
 ---
 
 <Layout>
-	<h2>カウントアップ</h2>
-	<Countup />
-	<TodoList />
+	<h1>aha-stack</h1>
+	<p>利用可能なページ:</p>
+	<ul>
+		{
+			pages.map((page) => (
+				<li>
+					<a href={page.path}>
+						{page.name === "index" ? "ホーム" : page.name}
+						{page.path === "/" ? " (このページ)" : ""}
+					</a>
+					<small style="margin-left: 10px; color: #666;">({page.file})</small>
+				</li>
+			))
+		}
+	</ul>
+
+	<h2>APIエンドポイント</h2>
+	{
+		Object.entries(apisByCategory).map(([category, categoryApis]) => (
+			<div>
+				<h3>{category} API:</h3>
+				<ul>
+					{categoryApis.map((api) => (
+						<li>
+							<a href={api.path}>{api.name}</a>
+							<small style="margin-left: 10px; color: #666;">
+								({api.file})
+							</small>
+						</li>
+					))}
+				</ul>
+			</div>
+		))
+	}
+
+	<h2>ファイル構造</h2>
+	<details>
+		<summary>ページファイル一覧</summary>
+		<ul>
+			{
+				pageFiles.map((file) => (
+					<li>
+						<code>{file}</code>
+					</li>
+				))
+			}
+		</ul>
+	</details>
+
+	<details>
+		<summary>APIファイル一覧</summary>
+		<ul>
+			{
+				apiFiles.map((file) => (
+					<li>
+						<code>{file}</code>
+					</li>
+				))
+			}
+		</ul>
+	</details>
 </Layout>
