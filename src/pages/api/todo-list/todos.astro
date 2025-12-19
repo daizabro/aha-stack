@@ -90,10 +90,7 @@ try {
                 hx-trigger="change"
                 hx-target="this"
               />
-              <label
-                for=`todo_${todo.id}`
-                x-text="title">
-              </label>
+              <label for=`todo_${todo.id}` x-text="title"></label>
               <button
                 x-on:click="editing = true"
               >
@@ -111,7 +108,6 @@ try {
             hx-target="submit"
             x-show="editing"
             id=`${todo.id}`
-            // x-data="{updateTitle(){patchTodo(id, title)}}"
           >
               <input
                 type="checkbox"
@@ -122,48 +118,37 @@ try {
                 type="text"
                 x-model="title"
               />
-              <button
-                x-on:click="updateTitle();editing = false"
-              >
-                更新
-              </button>
-              <button
-                x-on:click="editing = false"
-              >
-                閉じる
-              </button>
+              <button x-on:click="patchTodo(id, title);editing = false">更新</button>
+              <button x-on:click="editing = false">閉じる</button>
           </div>
         </li>
       ))}
     </ul>
-//     <script>
-//       // @ts-ignore
-//       feather.replace();
+    <script>
+      const patchTodo = (id: string, title: string) => {
+        const url = `/api/todo-list/${id}`;
+        const data = { title: title };
+        fetch(url, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        })
+        .then(response => {
+          if (response.ok) {
+            location.reload();
+          } else {
+            throw new Error('Update failed');
+          }
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+      }
 
-//       function patchTodo(id: string, title: string) {
-// 				console.log(`Updating todo ${id} with title: ${title}`);
-//   const url = `/api/todo-list/${id}`;
-//   const data = { title: title };
-//   fetch(url, {
-//     method: 'PATCH',
-//     headers: {
-//       'Content-Type': 'application/json',
-//     },
-//     body: JSON.stringify(data),
-//   })
-//   .then(response => {
-//     if (response.ok) {
-//       // 成功時の処理（必要に応じてUIを更新）
-//       location.reload(); // またはHTMXでリストを再読み込み
-//     } else {
-//       throw new Error('Update failed');
-//     }
-//   })
-//   .catch((error) => {
-//     console.error('Error:', error);
-//   });
-// }
-//     </script>
+			window.patchTodo = patchTodo;
+    </script>
   ) : (
     <p>TODOがありません。</p>
   )
