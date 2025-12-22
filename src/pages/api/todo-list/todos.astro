@@ -1,6 +1,11 @@
 ---
-import { getTodos, writeTodos, type Todo } from "./functions/todoFileOperations";
 export const partial = true;
+
+import {
+	getTodos,
+	writeTodos,
+	type Todo,
+} from "./functions/todoFileOperations";
 
 let todos: Todo[] = [];
 
@@ -11,18 +16,18 @@ try {
 	const requestMethod = Astro.request.method;
 	switch (requestMethod) {
 		case "GET":
-
-		// GETの場合は正常処理
+			// GETの場合は正常処理
 			Astro.response.status = 200;
 			break;
 
-			case "POST":
+		case "POST":
 			try {
 				const formData = await Astro.request.formData();
 				const todo = formData.get("todo");
 
 				// todoがstringでない場合はエラー
-				if (typeof todo !== "string") throw new Error("todoが文字列ではありません");
+				if (typeof todo !== "string")
+					throw new Error("todoが文字列ではありません");
 
 				// TODOを追加
 				todos.push({
@@ -35,11 +40,10 @@ try {
 				// 正常なレスポンスを返す
 				Astro.response.status = 201;
 			} catch (formError) {
-
 				// フォームデータの取得に失敗した場合、JSON形式での追加を試みる
 				try {
 					const body = await Astro.request.text();
-					if (!body || body.trim() === '') {
+					if (!body || body.trim() === "") {
 						throw new Error("Request body is empty");
 					}
 
@@ -67,90 +71,71 @@ try {
 } catch (error) {
 	console.error(error);
 }
+
+const patchTodo = (id: string, title: string) => {
+	const url = `/api/todo-list/${id}`;
+	const data = { title: title };
+	fetch(url, {
+		method: "PATCH",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(data),
+	})
+		.then((response) => {
+			if (response.ok) {
+				location.reload();
+			} else {
+				throw new Error("Update failed");
+			}
+		})
+		.catch((error) => {
+			console.error("Error:", error);
+		});
+};
 ---
 
 {
-  todos.length ? (
-    <ul>
-      {todos.map((todo: Todo) => (
-        <li
-          x-data=`{editing: false, title: "${todo.title}", id: "${todo.id}"}`
-        >
-        <div
-            hx-target="submit"
-            x-show="!editing"
-          >
-              <input type="hidden" name="id" value={todo.id} />
-              <input
-                type="checkbox"
-                name="complete"
-                id=`todo_${todo.id}`
-                checked={todo.complete}
-                hx-put=`/api/todo-list/${todo.id}`
-                hx-trigger="change"
-                hx-target="this"
-              />
-              <label for=`todo_${todo.id}` x-text="title"></label>
-              <button
-                x-on:click="editing = true"
-              >
-                編集
-              </button>
-              <button
-                hx-delete=`/api/todo-list/${todo.id}`
-                hx-target="closest li"
-                hx-swap="outerHTML swap:1s"
-              >
-                削除
-              </button>
-          </div>
-          <div
-            hx-target="submit"
-            x-show="editing"
-            id=`${todo.id}`
-          >
-              <input
-                type="checkbox"
-                checked={todo.complete}
-                disabled
-              />
-              <input
-                type="text"
-                x-model="title"
-              />
-              <button x-on:click="patchTodo(id, title);editing = false">更新</button>
-              <button x-on:click="editing = false">閉じる</button>
-          </div>
-        </li>
-      ))}
-    </ul>
-    <script>
-      const patchTodo = (id: string, title: string) => {
-        const url = `/api/todo-list/${id}`;
-        const data = { title: title };
-        fetch(url, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        })
-        .then(response => {
-          if (response.ok) {
-            location.reload();
-          } else {
-            throw new Error('Update failed');
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-        });
-      }
-
-			window.patchTodo = patchTodo;
-    </script>
-  ) : (
-    <p>TODOがありません。</p>
-  )
+	todos.length ? (
+		<ul>
+			{todos.map((todo: Todo) => (
+				<li
+					x-data={`{editing: false, title: "${todo.title}", id: "${todo.id}"}`}
+				>
+					<div hx-target="submit" x-show="!editing">
+						<input type="hidden" name="id" value={todo.id} />
+						<input
+							type="checkbox"
+							name="complete"
+							id={`todo_${todo.id}`}
+							checked={todo.complete}
+							hx-put={`/api/todo-list/${todo.id}`}
+							hx-trigger="change"
+							hx-target="this"
+						/>
+						<label for={`todo_${todo.id}`} x-text="title" />
+						<button x-on:click="editing = true">編集</button>
+						<button
+							hx-delete={`/api/todo-list/${todo.id}`}
+							hx-target="closest li"
+							hx-swap="outerHTML swap:1s"
+						>
+							削除
+						</button>
+					</div>
+					<div hx-target="submit" x-show="editing" id={`${todo.id}`}>
+						<input type="checkbox" checked={todo.complete} disabled />
+						<input type="text" x-model="title" />
+						<button x-on:click="patchTodo(id, title);editing = false">
+							更新
+						</button>
+						<button x-on:click="editing = false">閉じる</button>
+					</div>
+				</li>
+			))}
+		</ul>
+	) : (
+		<p>TODOがありません。</p>
+	)
 }
-<p>{todos.length}件のTODO</p>
+<p><span id="todo-count">{todos.length}件のTODO</span></p>
