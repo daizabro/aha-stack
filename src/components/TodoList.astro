@@ -19,3 +19,28 @@
 	>
 	</div>
 </section>
+
+<script is:inline>
+	// Alpine用の関数定義
+	const patchTodo = (id, title) => {
+		const url = `/api/todo-list/${id}`;
+		const data = { title: title };
+		fetch(url, {
+			method: "PATCH",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(data),
+		})
+			.then((response) => {
+				if (response.ok) {
+					location.reload();
+				} else {
+					throw new Error("Update failed");
+				}
+			})
+			.catch((error) => {
+				console.error("Error:", error);
+			});
+	};
+</script>
