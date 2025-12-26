@@ -45,7 +45,6 @@ export function getTodos(): Todo[] {
 }
 
 export function writeTodos(todos: Todo[]): void {
-	console.log("writeTodos", todos);
 	try {
 		fs.writeFileSync(todoJson, JSON.stringify(todos));
 	} catch (e) {
